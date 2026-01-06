@@ -1,0 +1,7 @@
+{
+  "name": "Project Ohana: Digital Scrapbook",
+  "description": "An interstellar digital scrapbook journey featuring an interactive 3D Stitch, glassmorphism UI, and personalized AI-powered messages.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
