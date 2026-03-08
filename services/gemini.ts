@@ -67,7 +67,7 @@ export const generateLoveLetter = async (context: string): Promise<string> => {
     if (!ai) return "You are my entire world, my ohana, and my greatest adventure.";
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: `Generate a beautiful, romantic love letter. Context: ${context || siteConfig.finale.letterContext}`,
       config: {
         systemInstruction: "You are a romantic poet writing a message for a soulmate. Use cosmic and tropical metaphors. Keep it deeply personal.",

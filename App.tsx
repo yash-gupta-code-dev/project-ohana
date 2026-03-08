@@ -1,24 +1,36 @@
-
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { AppState, SiteConfig } from './types';
 import Landing from './pages/Landing';
 import Gallery from './pages/Gallery';
 import Lab from './pages/Lab';
 import Finale from './pages/Finale';
+import Mowgli from './pages/Mowgli';
 import CursorFollower from './components/CursorFollower';
 import { Volume2, VolumeX, Menu, X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { siteConfig as initialConfig } from './data/config';
 
-const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<AppState>('landing');
+const AppContent: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isAudioOn, setIsAudioOn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [config, setConfig] = useState<SiteConfig>(initialConfig);
   const [isLoading, setIsLoading] = useState(true);
 
+  const routes: { path: string; state: AppState }[] = [
+    { path: '/', state: 'landing' },
+    { path: '/gallery', state: 'gallery' },
+    { path: '/lab', state: 'lab' },
+    { path: '/finale', state: 'finale' },
+    { path: '/mowgli', state: 'mowgli' }
+  ];
+
+  const currentState = routes.find(r => r.path === location.pathname)?.state || 'landing';
+  const currentIndex = routes.findIndex(r => r.path === location.pathname);
+
   useEffect(() => {
-    // Simulate fetching data from an Admin API
     const loadData = async () => {
       await new Promise(resolve => setTimeout(resolve, 800));
       setConfig(initialConfig);
@@ -27,11 +39,17 @@ const App: React.FC = () => {
     loadData();
   }, []);
 
-  const pages: AppState[] = ['landing', 'gallery', 'lab', 'finale'];
-  const currentIndex = pages.indexOf(currentPage);
+  const nextPage = () => {
+    if (currentIndex < routes.length - 1) {
+      navigate(routes[currentIndex + 1].path);
+    }
+  };
 
-  const nextPage = () => currentIndex < pages.length - 1 && setCurrentPage(pages[currentIndex + 1]);
-  const prevPage = () => currentIndex > 0 && setCurrentPage(pages[currentIndex - 1]);
+  const prevPage = () => {
+    if (currentIndex > 0) {
+      navigate(routes[currentIndex - 1].path);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -85,14 +103,15 @@ const App: React.FC = () => {
           >
             <div className="w-full md:w-96 h-full glass p-12 flex flex-col justify-center gap-8 shadow-2xl">
               <h2 className="text-4xl font-bold mb-4">Journey Map</h2>
-              {pages.map((p, idx) => (
-                <button
-                  key={p}
-                  onClick={() => { setCurrentPage(p); setIsMenuOpen(false); }}
-                  className={`text-2xl text-left transition-all ${currentPage === p ? 'text-cyan-400 scale-110 pl-4' : 'text-white/60 hover:text-white'}`}
+              {routes.map((route, idx) => (
+                <Link
+                  key={route.path}
+                  to={route.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`text-2xl text-left transition-all ${location.pathname === route.path ? 'text-cyan-400 scale-110 pl-4' : 'text-white/60 hover:text-white'}`}
                 >
-                  0{idx + 1}. {p.toUpperCase()}
-                </button>
+                  0{idx + 1}. {route.state.toUpperCase()}
+                </Link>
               ))}
             </div>
             <div className="hidden md:block absolute inset-0 -z-10 bg-black/40" onClick={() => setIsMenuOpen(false)} />
@@ -103,7 +122,7 @@ const App: React.FC = () => {
       <main className="relative z-10 w-full h-full">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentPage}
+            key={location.pathname}
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.02 }}
@@ -111,10 +130,13 @@ const App: React.FC = () => {
             className="min-h-screen"
           >
             <Suspense fallback={<div className="h-screen flex items-center justify-center">Syncing...</div>}>
-              {currentPage === 'landing' && <Landing config={config.landing} onStart={nextPage} />}
-              {currentPage === 'gallery' && <Gallery config={config.gallery} />}
-              {currentPage === 'lab' && <Lab config={config.lab} />}
-              {currentPage === 'finale' && <Finale config={config.finale} />}
+              <Routes>
+                <Route path="/" element={<Landing config={config.landing} onStart={nextPage} />} />
+                <Route path="/gallery" element={<Gallery config={config.gallery} />} />
+                <Route path="/lab" element={<Lab config={config.lab} />} />
+                <Route path="/finale" element={<Finale config={config.finale} />} />
+                <Route path="/mowgli" element={<Mowgli config={config.mowgli} />} />
+              </Routes>
             </Suspense>
           </motion.div>
         </AnimatePresence>
@@ -126,7 +148,7 @@ const App: React.FC = () => {
             <ArrowLeft className="group-hover:-translate-x-1 transition-transform" />
           </button>
         )}
-        {currentIndex < pages.length - 1 && (
+        {currentIndex < routes.length - 1 && (
           <button onClick={nextPage} className="p-4 px-6 rounded-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold transition-all flex items-center gap-2 group shadow-[0_0_20px_rgba(0,243,255,0.4)]">
             <span>Next</span>
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
@@ -134,6 +156,14 @@ const App: React.FC = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 };
 

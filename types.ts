@@ -1,5 +1,5 @@
 
-export type AppState = 'landing' | 'gallery' | 'lab' | 'finale';
+export type AppState = 'landing' | 'gallery' | 'lab' | 'finale' | 'mowgli';
 
 export interface Photo {
   id: string;
@@ -37,5 +37,9 @@ export interface SiteConfig {
     surpriseTitle: string;
     surpriseDescription: string;
     surpriseLocation: string;
+  };
+  mowgli: {
+    title: string;
+    content: string;
   };
 }
